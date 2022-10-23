@@ -1,8 +1,15 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import InventoryPage from "./pages/InventoryPage";
+import ProductsPage from "./pages/ProductsPage";
+
 function App() {
   return (
-    <div className="App">
-      <h1>Welcome</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<InventoryPage />} />
+        <Route path="products" element={<ProductsPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -1,17 +1,30 @@
 import React from "react";
-import InventoryItem from "./InventoryItem";
+import Item from "./Item";
 import { useInventoryContext } from "../context/inventory_context";
 
 const InventoryList = () => {
   const { inventory } = useInventoryContext();
-  console.log(inventory);
+  // console.log(inventory);
+
+  const saveItems = (e) => {
+    e.preventDefault();
+    console.log("items saved succesfully!");
+  };
+
   return (
-    <div>
-      {inventory &&
-        inventory.map((item) => {
-          return <InventoryItem key={item.productId} {...item} />;
-        })}
-    </div>
+    <form className="grocery-form" onSubmit={saveItems}>
+      <div className="grocery-list">
+        <h3>your inventory</h3>
+        {inventory &&
+          inventory.map((item) => {
+            const { productId: id, quantity } = item;
+            return <Item key={id} id={id} quantity={quantity} />;
+          })}
+      </div>
+      <button className="clear-btn" onClick={saveItems}>
+        save items
+      </button>
+    </form>
   );
 };
 

@@ -45,5 +45,3 @@ export const InventoryProvider = ({ children }) => {
 export const useInventoryContext = () => {
   return useContext(InventoryContext);
 };
-
-// export { InventoryContext, InventoryProvider };

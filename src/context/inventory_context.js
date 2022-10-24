@@ -25,8 +25,15 @@ export const InventoryProvider = ({ children }) => {
     setInventory(tempInventory);
   };
 
+  const fetchInventory = () => {
+    fetch("https://fakestoreapi.com/carts/5")
+      .then((res) => res.json())
+      .then(({ products }) => setInventory(products));
+  };
+
   useEffect(() => {
-    setInventory(fetchedInventory);
+    fetchInventory();
+    // setInventory(fetchedInventory);
   }, []);
 
   return (

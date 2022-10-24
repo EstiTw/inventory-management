@@ -3,7 +3,6 @@ import Item from "./Item";
 
 const ProductsList = () => {
   const { products } = useProductsContext();
-  // console.log(products);
 
   const addItems = (e) => {
     e.preventDefault();

@@ -4,7 +4,6 @@ import { useInventoryContext } from "../context/inventory_context";
 
 const InventoryList = () => {
   const { inventory } = useInventoryContext();
-  // console.log(inventory);
 
   const saveItems = (e) => {
     e.preventDefault();

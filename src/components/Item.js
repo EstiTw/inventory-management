@@ -7,8 +7,9 @@ const Item = ({ id, quantity, title, withoutButtons }) => {
   const { toggleAmount } = useInventoryContext();
   const { products } = useProductsContext();
 
+  //get title for the inventory items (api return just {id, quantity} for GET inventory)
   const getTitle = () => {
-    const { title } = products.find((item) => item.id === id);
+    const { title } = products && products.find((item) => item.id === id);
     return title;
   };
 

@@ -1,15 +1,15 @@
 import React from "react";
 import Item from "./Item";
+import Alert from "../utils/Alert";
 import { useInventoryContext } from "../context/inventory_context";
 
 const InventoryList = () => {
-  const { inventory, editedInvetory, setInventory } = useInventoryContext();
+  const { updateInventory, editedInvetory, alert, setAlert } =
+    useInventoryContext();
 
   const saveItems = (e) => {
     e.preventDefault();
-    //update the api inventory and then:
-    setInventory(editedInvetory); //upadte the local inventory or do it in the post function
-    console.log("items saved succesfully!");
+    updateInventory();
   };
 
   return (
@@ -25,6 +25,7 @@ const InventoryList = () => {
       <button className="clear-btn" onClick={saveItems}>
         save items
       </button>
+      {alert.show && <Alert {...alert} />}
     </form>
   );
 };

@@ -1,8 +1,16 @@
 import React, { useState } from "react";
 import { IoAddCircle, IoRemoveCircle } from "react-icons/io5";
 import { useInventoryContext } from "../context/inventory_context";
-const Item = ({ id, quantity, withoutButtons }) => {
+import { useProductsContext } from "../context/products_context";
+
+const Item = ({ id, quantity, title, withoutButtons }) => {
   const { toggleAmount } = useInventoryContext();
+  const { products } = useProductsContext();
+
+  const getTitle = () => {
+    const { title } = products.find((item) => item.id === id);
+    return title;
+  };
 
   const increase = () => {
     toggleAmount(id, "inc");
@@ -14,7 +22,7 @@ const Item = ({ id, quantity, withoutButtons }) => {
 
   return (
     <article className="grocery-item">
-      <p className="title">{id}</p>
+      <p className="title">{title || getTitle()}</p>
       {quantity && <p className="title">{quantity}</p>}
       {!withoutButtons && (
         <div className="btn-container">
@@ -24,7 +32,6 @@ const Item = ({ id, quantity, withoutButtons }) => {
           <button type="button" className="edit-btn" onClick={increase}>
             <IoAddCircle />
           </button>
-          {/* <p className="title">{amount}</p> */}
         </div>
       )}
     </article>

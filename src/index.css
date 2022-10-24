@@ -266,7 +266,7 @@ Grocery List
 .title {
   margin-bottom: 0;
   color: var(--clr-grey-1);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   transition: var(--transition);
 }
 .edit-btn,

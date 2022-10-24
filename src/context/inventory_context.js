@@ -5,10 +5,13 @@ const InventoryContext = React.createContext();
 
 export const InventoryProvider = ({ children }) => {
   const [inventory, setInventory] = useState(null);
+  const [editedInvetory, setEditedInventory] = useState([]);
+  console.log("inventory", inventory);
+  console.log("editedInvetory", editedInvetory);
   // console.log(inventory);
 
   const toggleAmount = (id, value) => {
-    const tempInventory = inventory.map((item) => {
+    const tempInventory = editedInvetory.map((item) => {
       if (item.productId == id) {
         if (value === "inc") {
           let newAmount = item.quantity + 1;
@@ -22,13 +25,16 @@ export const InventoryProvider = ({ children }) => {
       return item;
     });
 
-    setInventory(tempInventory);
+    setEditedInventory(tempInventory);
   };
 
   const fetchInventory = () => {
     fetch("https://fakestoreapi.com/carts/5")
       .then((res) => res.json())
-      .then(({ products }) => setInventory(products));
+      .then(({ products }) => {
+        setInventory(products);
+        setEditedInventory(products);
+      });
   };
 
   useEffect(() => {
@@ -42,6 +48,7 @@ export const InventoryProvider = ({ children }) => {
         inventory,
         setInventory,
         toggleAmount,
+        editedInvetory,
       }}
     >
       {children}

@@ -7,8 +7,9 @@ export const ProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [productName, setProductName] = useState(null);
   const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
-
+  // console.log(alert, productName, products);
   const postProduct = () => {
+    // console.log("post Product");
     fetch("https://fakestoreapi.com/products", {
       method: "POST",
       body: JSON.stringify({
@@ -21,7 +22,7 @@ export const ProductsProvider = ({ children }) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        // console.log(data);
+        // console.log("data", data);
         if (!data) {
           console.log("no data");
           setAlert({
@@ -30,16 +31,17 @@ export const ProductsProvider = ({ children }) => {
             type: "danger",
           });
         } else {
-          console.log("there is data!");
-
-          setProducts([...products, { ...data }]);
-          setAlert({ show: false, msg: "", type: "" });
+          //this api return data even if there is no value, so we check if products did initialize, to prevent setProducts with the mass data in the first useEffect
+          if (products.length > 0) {
+            setProducts([...products, { ...data }]);
+            setAlert({ show: false, msg: "", type: "" });
+          }
         }
       });
   };
 
   const fetchProducts = () => {
-    console.log("initialize - fetching..");
+    // console.log("initialize - fetching..");
     fetch("https://fakestoreapi.com/products")
       .then((res) => res.json())
       .then((data) => setProducts(data));
@@ -48,6 +50,10 @@ export const ProductsProvider = ({ children }) => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    postProduct();
+  }, [productName]);
 
   return (
     <ProductsContext.Provider

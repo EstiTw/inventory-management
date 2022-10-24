@@ -17,8 +17,8 @@ const InventoryProductsList = () => {
         <h3>add to your inventory</h3>
         {products &&
           products.map((item) => {
-            const { id } = item;
-            return <Item key={id} id={id} quantity={0} />;
+            const { id, title } = item;
+            return <Item key={id} quantity={0} title={title} />;
           })}
       </div>
       <button className="clear-btn" onClick={addItems}>

@@ -13,8 +13,8 @@ const ProductsList = () => {
     <div className="grocery-list">
       {products &&
         products.map((item) => {
-          const { id } = item;
-          return <Item key={id} id={id} withoutButtons={true} />;
+          const { id, title } = item;
+          return <Item key={id} id={id} title={title} withoutButtons={true} />;
         })}
     </div>
   );

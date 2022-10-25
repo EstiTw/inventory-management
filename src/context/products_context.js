@@ -9,6 +9,9 @@ export const ProductsProvider = ({ children }) => {
   const [productName, setProductName] = useState(null);
   const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
 
+  const showAlert = (show = false, type = "", msg = "") => {
+    setAlert({ show, type, msg });
+  };
   const postProduct = async () => {
     try {
       const { data } = await axios.post(ENDPOINT_API, {
@@ -22,26 +25,18 @@ export const ProductsProvider = ({ children }) => {
         }),
       });
       if (!data) {
-        setAlert({
-          show: true,
-          msg: "somthing worng with the server, try again",
-          type: "danger",
-        });
+        showAlert(true, "danger", "somthing worng with the server, try again");
       } else {
         //this api return data even if there is no value, so we check if products did initialize, to prevent setProducts with the mass data in the first useEffect
         if (products.length > 0) {
           //product id will be the name becouse this api return always the same id
           setProducts([...products, { id: productName, title: productName }]);
-          setAlert({ show: false, msg: "", type: "" });
+          showAlert(false, "", "");
         }
       }
     } catch (error) {
       console.log(error.response);
-      setAlert({
-        show: true,
-        msg: "somthing worng with the server, try again",
-        type: "danger",
-      });
+      showAlert(true, "danger", "somthing worng with the server, try again");
     }
   };
 
@@ -49,24 +44,15 @@ export const ProductsProvider = ({ children }) => {
     try {
       const { data } = await axios(ENDPOINT_API);
       setProducts(data);
-      setAlert({
-        show: false,
-        msg: "",
-        type: "danger",
-      });
+      showAlert(false, "", "");
     } catch (error) {
       console.log(error.response);
-      setAlert({
-        show: true,
-        msg: "somthing worng with the server, try again",
-        type: "danger",
-      });
+      showAlert(true, "danger", "somthing worng with the server, try again");
     }
   };
 
   useEffect(() => {
     fetchProducts();
-    // fetchProductsViaAxios();
   }, []);
 
   useEffect(() => {
@@ -78,7 +64,7 @@ export const ProductsProvider = ({ children }) => {
       value={{
         products,
         alert,
-        setAlert,
+        showAlert,
         setProductName,
       }}
     >
@@ -90,40 +76,3 @@ export const ProductsProvider = ({ children }) => {
 export const useProductsContext = () => {
   return useContext(ProductsContext);
 };
-
-// fetch(ENDPOINT_API, {
-//   method: "POST",
-//   body: JSON.stringify({
-//     title: { productName },
-//     price: 13.5,
-//     description: "lorem ipsum set",
-//     image: "https://i.pravatar.cc",
-//     category: "electronic",
-//   }),
-// })
-//   .then((res) => res.json())
-//   .then((data) => {
-//     // console.log("data", data);
-//     if (!data) {
-//       console.log("no data");
-//       setAlert({
-//         show: true,
-//         msg: "somthing worng with the server, try again",
-//         type: "",
-//       });
-//     } else {
-//       //this api return data even if there is no value, so we check if products did initialize, to prevent setProducts with the mass data in the first useEffect
-//       if (products.length > 0) {
-//         setProducts([...products, { ...data }]);
-//         setAlert({ show: false, msg: "", type: "" });
-//       }
-//     }
-//   });
-// };
-
-// const fetchProducts = () => {
-//   // console.log("initialize - fetching..");
-//   fetch(ENDPOINT_API)
-//     .then((res) => res.json())
-//     .then((data) => setProducts(data));
-// };

@@ -1,29 +1,37 @@
-import React, { useState, useEffect } from "react";
-import { useProductsContext } from "../context/products_context";
+import React from "react";
+// import { useProductsContext } from "../context/products_context";
+import { useInventoryContext } from "../context/inventory_context";
+import Alert from "../utils/Alert";
 import Item from "./Item";
 
 const InventoryProductsList = () => {
-  const { products } = useProductsContext();
-  // console.log(products);
+  const { alert, invetoryToOrder, addPoductsToInventory } =
+    useInventoryContext();
 
   const addItems = (e) => {
     e.preventDefault();
-    console.log("products added to inventory");
+    addPoductsToInventory();
   };
 
   return (
     <form className="grocery-form" onSubmit={addItems}>
       <div className="grocery-list">
         <h3>add to your inventory</h3>
-        {products &&
-          products.map((item) => {
-            const { id, title } = item;
-            return <Item key={id} quantity={0} title={title} />;
+        {invetoryToOrder &&
+          invetoryToOrder.map((item) => {
+            return (
+              <Item
+                key={item.productId}
+                {...item}
+                inventoryType={invetoryToOrder}
+              />
+            );
           })}
       </div>
       <button className="clear-btn" onClick={addItems}>
         add items
       </button>
+      {alert.show && <Alert {...alert} />}
     </form>
   );
 };

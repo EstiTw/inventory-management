@@ -1,36 +1,53 @@
-import React, { useState } from "react";
+import React from "react";
 import { IoAddCircle, IoRemoveCircle } from "react-icons/io5";
 import { useInventoryContext } from "../context/inventory_context";
 import { useProductsContext } from "../context/products_context";
 
-const Item = ({ id, quantity, title, withoutButtons }) => {
+const Item = ({
+  productId,
+  quantity,
+  title,
+  withoutButtons,
+  inventoryType,
+}) => {
   const { toggleAmount } = useInventoryContext();
   const { products } = useProductsContext();
 
   //get title for the inventory items (api return just {id, quantity} for GET inventory)
   const getTitle = () => {
-    const { title } = products && products.find((item) => item.id === id);
+    const { title } =
+      products && products.find((item) => item.id === productId);
     return title;
   };
 
   const increase = () => {
-    toggleAmount(id, "inc");
+    toggleAmount(productId, "inc", inventoryType || "");
   };
 
   const decrease = () => {
-    toggleAmount(id, "dec");
+    toggleAmount(productId, "dec", inventoryType || "");
   };
 
   return (
     <article className="grocery-item">
       <p className="title">{title || getTitle()}</p>
-      {quantity && <p className="title">{quantity}</p>}
+      <div className="space-container" />
       {!withoutButtons && (
         <div className="btn-container">
-          <button type="button" className="delete-btn" onClick={decrease}>
+          <button
+            type="button"
+            className="delete-btn icon-button"
+            onClick={decrease}
+          >
             <IoRemoveCircle />
           </button>
-          <button type="button" className="edit-btn" onClick={increase}>
+          {<span className="title amount">{quantity}</span>}
+
+          <button
+            type="button"
+            className="edit-btn icon-button"
+            onClick={increase}
+          >
             <IoAddCircle />
           </button>
         </div>

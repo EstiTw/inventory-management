@@ -5,22 +5,16 @@ import Alert from "../utils/Alert";
 
 const ProductsPage = () => {
   const [name, setName] = useState("");
-  const { setProductName, alert, setAlert } = useProductsContext();
+  const { setProductName, alert, showAlert } = useProductsContext();
 
   const addProduct = (e) => {
     e.preventDefault();
-    console.log("name", name);
     if (name.trim() === "") {
-      setAlert({
-        show: true,
-        msg: "pls enter value",
-        type: "danger",
-      });
+      showAlert(true, "danger", "pls enter a value");
     } else {
       setProductName(name);
       setName("");
     }
-    // console.log(`${name} added to products`);
   };
 
   return (

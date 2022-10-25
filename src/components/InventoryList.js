@@ -4,8 +4,7 @@ import Alert from "../utils/Alert";
 import { useInventoryContext } from "../context/inventory_context";
 
 const InventoryList = () => {
-  const { updateInventory, editedInvetory, alert, setAlert } =
-    useInventoryContext();
+  const { updateInventory, editableInvetory, alert } = useInventoryContext();
 
   const saveItems = (e) => {
     e.preventDefault();
@@ -16,10 +15,15 @@ const InventoryList = () => {
     <form className="grocery-form" onSubmit={saveItems}>
       <div className="grocery-list">
         <h3>your inventory</h3>
-        {editedInvetory &&
-          editedInvetory.map((item) => {
-            const { productId: id, quantity } = item;
-            return <Item key={id} id={id} quantity={quantity} />;
+        {editableInvetory &&
+          editableInvetory.map((item) => {
+            return (
+              <Item
+                key={item.productId}
+                {...item}
+                inventoryType={editableInvetory}
+              />
+            );
           })}
       </div>
       <button className="clear-btn" onClick={saveItems}>

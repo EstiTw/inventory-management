@@ -1,22 +1,34 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
+import { useProductsContext } from "./products_context";
 
 const ENDPOINT_API = "https://fakestoreapi.com/carts/5";
 
 const InventoryContext = React.createContext();
 
 export const InventoryProvider = ({ children }) => {
+  const { products } = useProductsContext();
+
   const [inventory, setInventory] = useState(null);
-  const [editedInvetory, setEditedInventory] = useState([]);
+  const [editableInvetory, setEditableInventory] = useState([]);
+  const [invetoryToOrder, setInventoryToOrder] = useState([]);
   const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
 
-  console.log("inventory", inventory);
-  console.log("editedInvetory", editedInvetory);
-  // console.log(inventory);
+  const updateInventoryProducts = () => {
+    const orderInventory = products.map((item) => {
+      const { id, title } = item;
+      return { productId: id, title, quantity: 0 };
+    });
+    setInventoryToOrder(orderInventory);
+  };
 
-  const toggleAmount = (id, value) => {
-    const tempInventory = editedInvetory.map((item) => {
-      if (item.productId == id) {
+  const showAlert = (show = false, type = "", msg = "") => {
+    setAlert({ show, type, msg });
+  };
+
+  const toggleAmount = (id, value, inventoryType) => {
+    const tempInventory = inventoryType.map((item) => {
+      if (item.productId == id || item.id == id) {
         if (value === "inc") {
           let newAmount = item.quantity + 1;
           return { ...item, quantity: newAmount };
@@ -29,7 +41,11 @@ export const InventoryProvider = ({ children }) => {
       return item;
     });
 
-    setEditedInventory(tempInventory);
+    {
+      inventoryType === editableInvetory
+        ? setEditableInventory(tempInventory)
+        : setInventoryToOrder(tempInventory);
+    }
   };
 
   const updateInventory = async () => {
@@ -39,76 +55,109 @@ export const InventoryProvider = ({ children }) => {
         body: JSON.stringify({
           userId: 3,
           date: 2019 - 12 - 10,
-          products: { editedInvetory },
+          products: { editableInvetory },
         }),
       });
-      setInventory(editedInvetory);
-      console.log("items saved succesfully!");
-
-      setAlert({
-        show: false,
-        msg: "",
-        type: "",
-      });
+      setInventory(editableInvetory);
+      showAlert(false, "", "");
     } catch (error) {
       console.log(error.response);
-      // setEditedInventory(inventory);
-      setAlert({
-        show: true,
-        msg: "failed to save, try again",
-        type: "danger",
-      });
+      showAlert(true, "failed to save, try again", "danger");
     }
-
-    // fetch("https://fakestoreapi.com/carts/7", {
-    //   method: "PUT",
-    //   body: JSON.stringify({
-    //     userId: 3,
-    //     date: 2019 - 12 - 10,
-    //     products: [{ productId: 1, quantity: 3 }],
-    //   }),
-    // })
-    //   .then((res) => res.json())
-    //   .then((json) => console.log(json));
   };
 
   const fetchInventory = async () => {
     try {
       const { data } = await axios(ENDPOINT_API);
       const { products } = data;
-      console.log("fetchInventory", data);
       setInventory(products);
-      setEditedInventory(products);
-      setAlert({
-        show: false,
-        msg: "",
-        type: "danger",
-      });
+      setEditableInventory(products);
+      showAlert(false, "", "");
     } catch (error) {
       console.log(error.response);
-      setAlert({
-        show: true,
-        msg: "somthing worng with the server, try again",
-        type: "danger",
-      });
+      showAlert(true, "somthing worng with the server, try again", "danger");
     }
   };
 
+  const addPoductsToInventory = () => {
+    const itemsToAdd = invetoryToOrder.filter(
+      (orderItem) => orderItem.quantity !== 0
+    );
+
+    const itemsNotInOrderInventory = editableInvetory.filter((item) => {
+      const inItemsToAdd = itemsToAdd.find(
+        (itemToAdd) => itemToAdd.productId == item.productId
+      );
+      if (!inItemsToAdd) return item;
+    });
+
+    const notInEditableInventory = itemsToAdd.filter((item) => {
+      const indEditable = editableInvetory.find(
+        (editableItem) => editableItem.productId === item.productId
+      );
+      if (!indEditable)
+        return { productId: item.productId, quantity: item.quantity };
+    });
+
+    const inEditableInventory = itemsToAdd.filter((item) => {
+      const indEditable = editableInvetory.find(
+        (editableItem) => editableItem.productId === item.productId
+      );
+      if (indEditable) return item;
+    });
+
+    const updatedInEditable = inEditableInventory.map((item) => {
+      const { productId, quantity } = item;
+      const editIemQuantity = editableInvetory.find(
+        (item) => item.productId == productId
+      ).quantity;
+
+      return { productId: productId, quantity: quantity + editIemQuantity };
+    });
+
+    const updateNotInEditable = notInEditableInventory.map((item) => {
+      const q = item.quantity;
+      const id = item.productId;
+      return { productId: id, quantity: q };
+    });
+
+    const newEditableInventory = [
+      ...updateNotInEditable,
+      ...updatedInEditable,
+      ...itemsNotInOrderInventory,
+    ];
+    setEditableInventory(newEditableInventory);
+  };
+
+  //fetch inventory and update the editable inventory
   useEffect(() => {
     fetchInventory();
     // setInventory(fetchedInventory);
   }, []);
 
+  //when products initalized/changed - set inventoryToOrder
+  useEffect(() => {
+    updateInventoryProducts();
+  }, [products]);
+
+  useEffect(() => {
+    updateInventory();
+    //if no errors:
+    updateInventoryProducts();
+  }, [editableInvetory]);
+
   return (
     <InventoryContext.Provider
       value={{
         inventory,
-        setInventory,
         toggleAmount,
-        editedInvetory,
+        editableInvetory,
         updateInventory,
         alert,
-        setAlert,
+        invetoryToOrder,
+        setEditableInventory,
+        showAlert,
+        addPoductsToInventory,
       }}
     >
       {children}

@@ -263,11 +263,25 @@ Grocery List
 .grocery-item:hover .title {
   color: var(--clr-grey-5);
 }
+
 .title {
+  flex: 5;
   margin-bottom: 0;
   color: var(--clr-grey-1);
   letter-spacing: 1px;
+  /* text-align: center; */
   transition: var(--transition);
+}
+.space-container {
+  flex: 1;
+}
+.btn-container {
+  flex: 1;
+}
+
+.amount {
+  padding: 0.2rem;
+  text-align: center;
 }
 .edit-btn,
 .delete-btn {

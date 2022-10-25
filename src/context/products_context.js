@@ -2,16 +2,20 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 
 const ENDPOINT_API = "https://fakestoreapi.com/products";
+
 const ProductsContext = React.createContext();
 
 export const ProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [productName, setProductName] = useState(null);
   const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
 
   const showAlert = (show = false, type = "", msg = "") => {
     setAlert({ show, type, msg });
   };
+
+  //add new product to products api, if its success - update the products list (localy)
   const postProduct = async () => {
     try {
       const { data } = await axios.post(ENDPOINT_API, {
@@ -41,12 +45,16 @@ export const ProductsProvider = ({ children }) => {
   };
 
   const fetchProducts = async () => {
+    setIsLoading(true);
     try {
       const { data } = await axios(ENDPOINT_API);
       setProducts(data);
       showAlert(false, "", "");
+      setIsLoading(false);
     } catch (error) {
       console.log(error.response);
+      setIsLoading(false);
+
       showAlert(true, "danger", "somthing worng with the server, try again");
     }
   };
@@ -64,6 +72,7 @@ export const ProductsProvider = ({ children }) => {
       value={{
         products,
         alert,
+        isLoading,
         showAlert,
         setProductName,
       }}

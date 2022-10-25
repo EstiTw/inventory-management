@@ -8,7 +8,7 @@ const InventoryContext = React.createContext();
 
 export const InventoryProvider = ({ children }) => {
   const { products } = useProductsContext();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [inventory, setInventory] = useState(null);
   const [editableInvetory, setEditableInventory] = useState([]);
   const [invetoryToOrder, setInventoryToOrder] = useState([]);
@@ -66,16 +66,20 @@ export const InventoryProvider = ({ children }) => {
     }
   };
 
+  //fetch inventory and update the editable inventory
   const fetchInventory = async () => {
+    setIsLoading(true);
     try {
       const { data } = await axios(ENDPOINT_API);
       const { products } = data;
       setInventory(products);
       setEditableInventory(products);
       showAlert(false, "", "");
+      setIsLoading(false);
     } catch (error) {
       console.log(error.response);
       showAlert(true, "somthing worng with the server, try again", "danger");
+      setIsLoading(false);
     }
   };
 
@@ -84,6 +88,7 @@ export const InventoryProvider = ({ children }) => {
       (orderItem) => orderItem.quantity !== 0
     );
 
+    // items in editableInvetory and in order
     const itemsNotInOrderInventory = editableInvetory.filter((item) => {
       const inItemsToAdd = itemsToAdd.find(
         (itemToAdd) => itemToAdd.productId == item.productId
@@ -91,6 +96,7 @@ export const InventoryProvider = ({ children }) => {
       if (!inItemsToAdd) return item;
     });
 
+    // items in order thet not in editableInvetory
     const notInEditableInventory = itemsToAdd.filter((item) => {
       const indEditable = editableInvetory.find(
         (editableItem) => editableItem.productId === item.productId
@@ -99,14 +105,16 @@ export const InventoryProvider = ({ children }) => {
         return { productId: item.productId, quantity: item.quantity };
     });
 
-    const inEditableInventory = itemsToAdd.filter((item) => {
+    //shared items - items in both editableInvetory and order
+    const sharedItems = itemsToAdd.filter((item) => {
       const indEditable = editableInvetory.find(
         (editableItem) => editableItem.productId === item.productId
       );
       if (indEditable) return item;
     });
 
-    const updatedInEditable = inEditableInventory.map((item) => {
+    // update the quantity in the shared items
+    const updatedInEditable = sharedItems.map((item) => {
       const { productId, quantity } = item;
       const editIemQuantity = editableInvetory.find(
         (item) => item.productId == productId
@@ -115,12 +123,14 @@ export const InventoryProvider = ({ children }) => {
       return { productId: productId, quantity: quantity + editIemQuantity };
     });
 
+    //refractoring - return just the productId and quantity
     const updateNotInEditable = notInEditableInventory.map((item) => {
       const q = item.quantity;
       const id = item.productId;
       return { productId: id, quantity: q };
     });
 
+    //update the editableInvetory with products
     const newEditableInventory = [
       ...updateNotInEditable,
       ...updatedInEditable,
@@ -132,14 +142,13 @@ export const InventoryProvider = ({ children }) => {
   //fetch inventory and update the editable inventory
   useEffect(() => {
     fetchInventory();
-    // setInventory(fetchedInventory);
   }, []);
 
-  //when products initalized/changed - set inventoryToOrder
   useEffect(() => {
     updateInventoryProducts();
   }, [products]);
 
+  //when we update editableInvetory - we update the invetory in api and we reset the products in products to add
   useEffect(() => {
     updateInventory();
     //if no errors:
@@ -149,15 +158,16 @@ export const InventoryProvider = ({ children }) => {
   return (
     <InventoryContext.Provider
       value={{
+        alert,
+        isLoading,
         inventory,
         toggleAmount,
         editableInvetory,
-        updateInventory,
-        alert,
         invetoryToOrder,
         setEditableInventory,
         showAlert,
         addPoductsToInventory,
+        updateInventory,
       }}
     >
       {children}

@@ -4,7 +4,7 @@ import Alert from "../utils/Alert";
 import { useInventoryContext } from "../context/inventory_context";
 
 const InventoryList = () => {
-  const { updateInventory, editableInvetory, alert } = useInventoryContext();
+  const { alert, editableInvetory, updateInventory } = useInventoryContext();
 
   const saveItems = (e) => {
     e.preventDefault();

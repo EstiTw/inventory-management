@@ -8,7 +8,13 @@ const ProductsPage = () => {
   const [name, setName] = useState("");
   const { addProduct, alert, isLoading } = useProductsContext();
 
-  //FIX: setName(""); in success adding product
+  const addProductToList = (e) => {
+    e.preventDefault();
+    addProduct(name);
+    if (!alert.show) {
+      setName("");
+    }
+  };
 
   if (isLoading) return <div className="loading" />;
 
@@ -39,10 +45,7 @@ const ProductsPage = () => {
             <button
               type="submit"
               className="submit-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                addProduct(name);
-              }}
+              onClick={addProductToList}
             >
               add
             </button>

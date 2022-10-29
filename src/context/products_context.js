@@ -30,9 +30,14 @@ export const ProductsProvider = ({ children }) => {
   const addProduct = (name) => {
     if (name.trim() === "") {
       showAlert(true, "danger", "pls enter a value");
-    } //FIX: check if products have this name
-    else {
-      dispatch({ type: "SET_PRODUCT_NAME", payload: name });
+    } else {
+      //check if products include this name
+      const productsContainName = state.products.find(
+        (item) => item.title === name
+      );
+      if (productsContainName)
+        showAlert(true, "danger", "The product is already in the list");
+      else dispatch({ type: "SET_PRODUCT_NAME", payload: name });
     }
   };
 
@@ -59,7 +64,6 @@ export const ProductsProvider = ({ children }) => {
           const req = await axios.post(ENDPOINT_API, {
             method: "POST",
             body: JSON.stringify({
-              // title: { productName },
               title: state.productName,
               price: 13.5,
               description: "lorem ipsum set",
@@ -68,10 +72,17 @@ export const ProductsProvider = ({ children }) => {
             }),
           });
 
-          dispatch({
-            type: "UPDATE_PRODUCTS",
-            payload: { id: state.productName, title: state.productName },
-          });
+          if (req.data)
+            dispatch({
+              type: "UPDATE_PRODUCTS",
+              payload: { id: state.productName, title: state.productName },
+            });
+          else
+            showAlert(
+              true,
+              "danger",
+              "somthing worng with the server, try again"
+            );
         } catch (error) {
           console.log(error.response);
           showAlert(

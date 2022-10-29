@@ -18,8 +18,11 @@ const reducer = (state, action) => {
             return { ...item, quantity: newAmount };
           }
           if (value === "dec") {
-            let newAmount = item.quantity - 1;
-            return { ...item, quantity: newAmount };
+            if (item.quantity === 0) return { ...item, quantity: 0 };
+            else {
+              let newAmount = item.quantity - 1;
+              return { ...item, quantity: newAmount };
+            }
           }
         }
         return item;
@@ -31,10 +34,10 @@ const reducer = (state, action) => {
         return { ...state, invetoryToOrder: tempInventory };
       }
 
-    case "UPDATE_INVENTORY":
+    case "UPDATE_INVENTORY_LIST":
       return {
         ...state,
-        inventory: state.editableInvetory,
+        inventory: action.payload,
         alert: { show: false, type: "", msg: "" },
       };
 

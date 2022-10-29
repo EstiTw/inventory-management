@@ -36,13 +36,13 @@ export const ProductsProvider = ({ children }) => {
         (item) => item.title === name
       );
       if (productsContainName)
-        showAlert(true, "danger", "The product is already in the list");
+        showAlert(true, "danger", "product is already in the list");
       else dispatch({ type: "SET_PRODUCT_NAME", payload: name });
     }
   };
 
   const fetchProducts = async () => {
-    dispatch({ type: "LODING" });
+    dispatch({ type: "LOADING" });
 
     try {
       const { data } = await axios(ENDPOINT_API);

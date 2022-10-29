@@ -43,16 +43,19 @@ export const InventoryProvider = ({ children }) => {
   };
 
   const updateInventory = async () => {
+    const positiveEditable = state.editableInvetory.filter(
+      (item) => item.quantity !== 0
+    );
     try {
       const response = await axios.put(ENDPOINT_API, {
         method: "PUT",
         body: JSON.stringify({
           userId: 3,
           date: 2019 - 12 - 10,
-          products: state.editableInvetory,
+          products: positiveEditable,
         }),
       });
-      dispatch({ type: "UPDATE_INVENTORY" });
+      dispatch({ type: "UPDATE_INVENTORY_LIST", payload: positiveEditable });
     } catch (error) {
       console.log(error.response);
       showAlert(true, "danger", "somthing worng with the server, try again");

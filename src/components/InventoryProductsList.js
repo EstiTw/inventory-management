@@ -1,5 +1,3 @@
-import React from "react";
-// import { useProductsContext } from "../context/products_context";
 import { useInventoryContext } from "../context/inventory_context";
 import Alert from "../utils/Alert";
 import Item from "./Item";

@@ -1,51 +1,45 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext, useReducer } from "react";
 import axios from "axios";
 import { useProductsContext } from "./products_context";
+import reducer from "../reducers/inventory_reducer";
 
 const ENDPOINT_API = "https://fakestoreapi.com/carts/5";
 
 const InventoryContext = React.createContext();
 
-export const InventoryProvider = ({ children }) => {
-  const { products } = useProductsContext();
-  const [isLoading, setIsLoading] = useState(false);
-  const [inventory, setInventory] = useState(null);
-  const [editableInvetory, setEditableInventory] = useState([]);
-  const [invetoryToOrder, setInventoryToOrder] = useState([]);
-  const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
+const initialState = {
+  products: [],
+  isLoading: true,
+  inventory: null,
+  editableInvetory: [],
+  invetoryToOrder: [],
+  alert: { show: false, msg: "", type: "" },
+};
 
-  const updateInventoryProducts = () => {
-    const orderInventory = products.map((item) => {
-      const { id, title } = item;
-      return { productId: id, title, quantity: 0 };
+export const InventoryProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { products } = useProductsContext();
+
+  const showAlert = (show, type, msg) => {
+    dispatch({
+      type: "SHOW_ALERT",
+      payload: {
+        show: show,
+        type: type,
+        msg: msg,
+      },
     });
-    setInventoryToOrder(orderInventory);
   };
 
-  const showAlert = (show = false, type = "", msg = "") => {
-    setAlert({ show, type, msg });
+  const updateInventoryProducts = () => {
+    dispatch({ type: "UPDATE_INVENTORY_PRODUCTS", payload: products });
   };
 
   const toggleAmount = (id, value, inventoryType) => {
-    const tempInventory = inventoryType.map((item) => {
-      if (item.productId == id || item.id == id) {
-        if (value === "inc") {
-          let newAmount = item.quantity + 1;
-          return { ...item, quantity: newAmount };
-        }
-        if (value === "dec") {
-          let newAmount = item.quantity - 1;
-          return { ...item, quantity: newAmount };
-        }
-      }
-      return item;
+    dispatch({
+      type: "TOGGLE_AMOUNT",
+      payload: { id: id, value: value, inventoryType: inventoryType },
     });
-
-    {
-      inventoryType === editableInvetory
-        ? setEditableInventory(tempInventory)
-        : setInventoryToOrder(tempInventory);
-    }
   };
 
   const updateInventory = async () => {
@@ -55,88 +49,31 @@ export const InventoryProvider = ({ children }) => {
         body: JSON.stringify({
           userId: 3,
           date: 2019 - 12 - 10,
-          products: { editableInvetory },
+          products: state.editableInvetory,
         }),
       });
-      setInventory(editableInvetory);
-      showAlert(false, "", "");
+      dispatch({ type: "UPDATE_INVENTORY" });
     } catch (error) {
       console.log(error.response);
-      showAlert(true, "failed to save, try again", "danger");
+      showAlert(true, "danger", "somthing worng with the server, try again");
     }
   };
 
   //fetch inventory and update the editable inventory
   const fetchInventory = async () => {
-    setIsLoading(true);
+    dispatch({ type: "LODING" });
     try {
       const { data } = await axios(ENDPOINT_API);
       const { products } = data;
-      setInventory(products);
-      setEditableInventory(products);
-      showAlert(false, "", "");
-      setIsLoading(false);
+      dispatch({ type: "FETCH_INVENTORY", payload: products });
     } catch (error) {
       console.log(error.response);
-      showAlert(true, "somthing worng with the server, try again", "danger");
-      setIsLoading(false);
+      showAlert(true, "danger", "somthing worng with the server, try again");
     }
   };
 
   const addPoductsToInventory = () => {
-    const itemsToAdd = invetoryToOrder.filter(
-      (orderItem) => orderItem.quantity !== 0
-    );
-
-    // items in editableInvetory and in order
-    const itemsNotInOrderInventory = editableInvetory.filter((item) => {
-      const inItemsToAdd = itemsToAdd.find(
-        (itemToAdd) => itemToAdd.productId == item.productId
-      );
-      if (!inItemsToAdd) return item;
-    });
-
-    // items in order thet not in editableInvetory
-    const notInEditableInventory = itemsToAdd.filter((item) => {
-      const indEditable = editableInvetory.find(
-        (editableItem) => editableItem.productId === item.productId
-      );
-      if (!indEditable)
-        return { productId: item.productId, quantity: item.quantity };
-    });
-
-    //shared items - items in both editableInvetory and order
-    const sharedItems = itemsToAdd.filter((item) => {
-      const indEditable = editableInvetory.find(
-        (editableItem) => editableItem.productId === item.productId
-      );
-      if (indEditable) return item;
-    });
-
-    // update the quantity in the shared items
-    const updatedInEditable = sharedItems.map((item) => {
-      const { productId, quantity } = item;
-      const editIemQuantity = editableInvetory.find(
-        (item) => item.productId == productId
-      ).quantity;
-
-      return { productId: productId, quantity: quantity + editIemQuantity };
-    });
-
-    //refractoring - return just the productId and quantity
-    const updateNotInEditable = notInEditableInventory.map((item) => {
-      const q = item.quantity;
-      const id = item.productId;
-      return { productId: id, quantity: q };
-    });
-
-    //update the editableInvetory with products
-    const newEditableInventory = [
-      ...updateNotInEditable,
-      ...updatedInEditable,
-      ...itemsNotInOrderInventory,
-    ];
-    setEditableInventory(newEditableInventory);
+    dispatch({ type: "ADD_PRODUCTS_TO_INVENTORY" });
   };
 
   //fetch inventory and update the editable inventory
@@ -151,21 +88,14 @@ export const InventoryProvider = ({ children }) => {
   //when we update editableInvetory - we update the invetory in api and we reset the products in products to add
   useEffect(() => {
     updateInventory();
-    //if no errors:
     updateInventoryProducts();
-  }, [editableInvetory]);
+  }, [state.editableInvetory]);
 
   return (
     <InventoryContext.Provider
       value={{
-        alert,
-        isLoading,
-        inventory,
+        ...state,
         toggleAmount,
-        editableInvetory,
-        invetoryToOrder,
-        setEditableInventory,
-        showAlert,
         addPoductsToInventory,
         updateInventory,
       }}

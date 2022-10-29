@@ -1,60 +1,49 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext, useReducer } from "react";
 import axios from "axios";
+import reducer from "../reducers/products_reducer";
 
 const ENDPOINT_API = "https://fakestoreapi.com/products";
 
 const ProductsContext = React.createContext();
 
-export const ProductsProvider = ({ children }) => {
-  const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [productName, setProductName] = useState(null);
-  const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
+const initialState = {
+  products: [],
+  isLoading: true,
+  productName: null,
+  alert: { show: false, msg: "", type: "" },
+};
 
-  const showAlert = (show = false, type = "", msg = "") => {
-    setAlert({ show, type, msg });
+export const ProductsProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const showAlert = (show, type, msg) => {
+    dispatch({
+      type: "SHOW_ALERT",
+      payload: {
+        show: show,
+        type: type,
+        msg: msg,
+      },
+    });
   };
 
-  //add new product to products api, if its success - update the products list (localy)
-  const postProduct = async () => {
-    try {
-      const { data } = await axios.post(ENDPOINT_API, {
-        method: "POST",
-        body: JSON.stringify({
-          title: { productName },
-          price: 13.5,
-          description: "lorem ipsum set",
-          image: "https://i.pravatar.cc",
-          category: "electronic",
-        }),
-      });
-      if (!data) {
-        showAlert(true, "danger", "somthing worng with the server, try again");
-      } else {
-        //this api return data even if there is no value, so we check if products did initialize, to prevent setProducts with the mass data in the first useEffect
-        if (products.length > 0) {
-          //product id will be the name becouse this api return always the same id
-          setProducts([...products, { id: productName, title: productName }]);
-          showAlert(false, "", "");
-        }
-      }
-    } catch (error) {
-      console.log(error.response);
-      showAlert(true, "danger", "somthing worng with the server, try again");
+  const addProduct = (name) => {
+    if (name.trim() === "") {
+      showAlert(true, "danger", "pls enter a value");
+    } //FIX: check if products have this name
+    else {
+      dispatch({ type: "SET_PRODUCT_NAME", payload: name });
     }
   };
 
   const fetchProducts = async () => {
-    setIsLoading(true);
+    dispatch({ type: "LODING" });
+
     try {
       const { data } = await axios(ENDPOINT_API);
-      setProducts(data);
-      showAlert(false, "", "");
-      setIsLoading(false);
+      dispatch({ type: "DISPLAY_PRODUCTS", payload: data });
     } catch (error) {
       console.log(error.response);
-      setIsLoading(false);
-
       showAlert(true, "danger", "somthing worng with the server, try again");
     }
   };
@@ -64,17 +53,46 @@ export const ProductsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    postProduct();
-  }, [productName]);
+    if (state.productName) {
+      (async () => {
+        try {
+          const req = await axios.post(ENDPOINT_API, {
+            method: "POST",
+            body: JSON.stringify({
+              // title: { productName },
+              title: state.productName,
+              price: 13.5,
+              description: "lorem ipsum set",
+              image: "https://i.pravatar.cc",
+              category: "electronic",
+            }),
+          });
+
+          dispatch({
+            type: "UPDATE_PRODUCTS",
+            payload: { id: state.productName, title: state.productName },
+          });
+        } catch (error) {
+          console.log(error.response);
+          showAlert(
+            true,
+            "danger",
+            "somthing worng with the server, try again"
+          );
+        }
+      })();
+    }
+
+    return () => {
+      console.log("cleaning");
+    };
+  }, [state.productName]);
 
   return (
     <ProductsContext.Provider
       value={{
-        products,
-        alert,
-        isLoading,
-        showAlert,
-        setProductName,
+        ...state,
+        addProduct,
       }}
     >
       {children}

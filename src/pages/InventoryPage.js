@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import InventoryList from "../components/InventoryList";
 import InventoryProductsList from "../components/InventoryProductsList";
 import { useInventoryContext } from "../context/inventory_context";
+import { useProductsContext } from "../context/products_context";
 
 const InventoryPage = () => {
+  const { products } = useProductsContext();
   const { isLoading } = useInventoryContext();
 
-  if (isLoading) return <div className="loading" />;
+  if (isLoading || products.length < 1) return <div className="loading" />;
 
   return (
     <>

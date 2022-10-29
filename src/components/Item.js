@@ -1,4 +1,3 @@
-import React from "react";
 import { IoAddCircle, IoRemoveCircle } from "react-icons/io5";
 import { useInventoryContext } from "../context/inventory_context";
 import { useProductsContext } from "../context/products_context";
@@ -20,14 +19,6 @@ const Item = ({
     return title;
   };
 
-  const increase = () => {
-    toggleAmount(productId, "inc", inventoryType || "");
-  };
-
-  const decrease = () => {
-    toggleAmount(productId, "dec", inventoryType || "");
-  };
-
   return (
     <article className="grocery-item">
       <p className="title">{title || getTitle()}</p>
@@ -37,7 +28,7 @@ const Item = ({
           <button
             type="button"
             className="delete-btn icon-button"
-            onClick={decrease}
+            onClick={() => toggleAmount(productId, "dec", inventoryType || "")}
           >
             <IoRemoveCircle />
           </button>
@@ -46,7 +37,7 @@ const Item = ({
           <button
             type="button"
             className="edit-btn icon-button"
-            onClick={increase}
+            onClick={() => toggleAmount(productId, "inc", inventoryType || "")}
           >
             <IoAddCircle />
           </button>

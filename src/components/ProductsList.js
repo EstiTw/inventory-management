@@ -4,11 +4,6 @@ import Item from "./Item";
 const ProductsList = () => {
   const { products } = useProductsContext();
 
-  const addItems = (e) => {
-    e.preventDefault();
-    console.log("products added to inventory");
-  };
-
   return (
     <div className="grocery-list">
       {products &&
